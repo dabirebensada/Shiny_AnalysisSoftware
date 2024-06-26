@@ -1,0 +1,10 @@
+name: interface_r
+title:
+username: softwareanalysisinterface
+account: softwareanalysisinterface
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 12195851
+bundleId: 8770225
+url: https://softwareanalysisinterface.shinyapps.io/interface_r/
+version: 1
