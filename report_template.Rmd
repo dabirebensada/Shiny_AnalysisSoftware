@@ -22,6 +22,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(ggplot2)
 library(plotly)
 library(rpart.plot)
+library(randomForest)
 library(grid)
 ```
 
@@ -73,13 +74,22 @@ Courbes ROC Superposées
 train_roc_plots <- params$train_roc_plots
 test_roc_plots <- params$test_roc_plots
 
-if (!is.null(train_roc_plots) & !is.null(test_roc_plots)) {
+if (!is.null(train_roc_plots) && !is.null(test_roc_plots)) {
   combined_plots <- lapply(names(train_roc_plots), function(model_name) {
     train_roc <- train_roc_plots[[model_name]]
     test_roc <- test_roc_plots[[model_name]]
-    
-    train_data <- data.frame(Specificity = train_roc$specificities, Sensitivity = train_roc$sensitivities, Dataset = "Train")
-    test_data <- data.frame(Specificity = test_roc$specificities, Sensitivity = test_roc$sensitivities, Dataset = "Test")
+    if (is.null(train_roc) || is.null(test_roc)) return(NULL)
+
+    train_data <- data.frame(
+      Specificity = train_roc$specificities,
+      Sensitivity = train_roc$sensitivities,
+      Dataset = "Train"
+    )
+    test_data <- data.frame(
+      Specificity = test_roc$specificities,
+      Sensitivity = test_roc$sensitivities,
+      Dataset = "Test"
+    )
     combined_data <- rbind(train_data, test_data)
     
     p <- ggplot(combined_data, aes(x = Specificity, y = Sensitivity, color = Dataset)) +
@@ -89,8 +99,8 @@ if (!is.null(train_roc_plots) & !is.null(test_roc_plots)) {
       ylab("Sensitivity") +
       theme_minimal()
   })
-  
-  combined_plots
+
+  Filter(Negate(is.null), combined_plots)
 }
 ```
 
@@ -102,15 +112,20 @@ train_results <- params$train_results
 if (!is.null(train_results)) {
   for (model_name in names(train_results)) {
     if (inherits(train_results[[model_name]], "randomForest")) {
-      importance <- importance(train_results[[model_name]])
+      importance <- randomForest::importance(train_results[[model_name]])
       importance_df <- data.frame(Variable = rownames(importance), Importance = importance[, 1])
       p <- ggplot(importance_df, aes(x = reorder(Variable, Importance), y = Importance)) +
         geom_bar(stat = "identity") +
         coord_flip() +
-        ggtitle(paste("Importance des Variables (Apprentissage) -", model_name)) +
+        ggtitle(
+          paste("Importance des Variables (Apprentissage) -", model_name)
+        ) +
         xlab("Variable") +
         ylab("Importance") +
-        theme(plot.margin = unit(c(1,1,1,1), "cm"), plot.title = element_text(hjust = 0.5))  
+        theme(
+          plot.margin = unit(c(1, 1, 1, 1), "cm"),
+          plot.title = element_text(hjust = 0.5)
+        )
       print(p)
     }
   }
@@ -124,15 +139,20 @@ test_results <- params$test_results
 if (!is.null(test_results)) {
   for (model_name in names(test_results)) {
     if (inherits(test_results[[model_name]], "randomForest")) {
-      importance <- importance(test_results[[model_name]])
+      importance <- randomForest::importance(test_results[[model_name]])
       importance_df <- data.frame(Variable = rownames(importance), Importance = importance[, 1])
       p <- ggplot(importance_df, aes(x = reorder(Variable, Importance), y = Importance)) +
         geom_bar(stat = "identity") +
         coord_flip() +
-        ggtitle(paste("Importance des Variables (Test) -", model_name)) +
+        ggtitle(
+          paste("Importance des Variables (Test) -", model_name)
+        ) +
         xlab("Variable") +
         ylab("Importance") +
-        theme(plot.margin = unit(c(1,1,1,1), "cm"), plot.title = element_text(hjust = 0.5))
+        theme(
+          plot.margin = unit(c(1, 1, 1, 1), "cm"),
+          plot.title = element_text(hjust = 0.5)
+        )
       print(p)
     }
   }
@@ -147,7 +167,10 @@ train_results <- params$train_results
 if (!is.null(train_results)) {
   for (model_name in names(train_results)) {
     if (inherits(train_results[[model_name]], "rpart")) {
-      rpart.plot::rpart.plot(train_results[[model_name]], main = paste("Arbre de Décision (Apprentissage) -", model_name))
+      rpart.plot::rpart.plot(
+        train_results[[model_name]],
+        main = paste("Arbre de Décision (Apprentissage) -", model_name)
+      )
     }
   }
 }
@@ -159,7 +182,10 @@ test_results <- params$test_results
 if (!is.null(test_results)) {
   for (model_name in names(test_results)) {
     if (inherits(test_results[[model_name]], "rpart")) {
-      rpart.plot::rpart.plot(test_results[[model_name]], main = paste("Arbre de Décision (Test) -", model_name))
+      rpart.plot::rpart.plot(
+        test_results[[model_name]],
+        main = paste("Arbre de Décision (Test) -", model_name)
+      )
     }
   }
 }
@@ -168,6 +194,9 @@ if (!is.null(test_results)) {
 Données combinées
 ```{r cars10}
 if (!is.null(params$combined_tree_model)) {
-  rpart.plot::rpart.plot(params$combined_tree_model, main = "Arbre de Décision (Ensemble)")
+  rpart.plot::rpart.plot(
+    params$combined_tree_model,
+    main = "Arbre de Décision (Ensemble)"
+  )
 }
 ```
