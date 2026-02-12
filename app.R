@@ -209,19 +209,20 @@ ui <- dashboardPage(
                 actionButton("user_guide_btn", "Guide Utilisateur"),
                 actionButton("maintenance_guide_btn", "Guide de Maintenance")
               ))
+    ),
+    tags$div(
+      id = "modals",
+      modalDialog(
+        id = "user_guide_modal", title = "Guide Utilisateur",
+        easyClose = TRUE, footer = NULL
+      ),
+      modalDialog(
+        id = "maintenance_guide_modal", title = "Guide de Maintenance",
+        easyClose = TRUE, footer = NULL
+      )
     )
   ),
-  tags$div(
-    id = "modals",
-    modalDialog(
-      id = "user_guide_modal", title = "Guide Utilisateur",
-      easyClose = TRUE, footer = NULL
-    ),
-    modalDialog(
-      id = "maintenance_guide_modal", title = "Guide de Maintenance",
-      easyClose = TRUE, footer = NULL
-    )
-  )
+  title = "MyDataBall - Showcase"
 )
 
 server <- function(input, output, session) {
